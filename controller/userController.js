@@ -43,7 +43,14 @@ exports.updateUser = async (req, res) => {
     if (req.file) photo = req.file.path;
 
     const updateData = { prenom, nom, email, numero_telephone };
-    if (mot_de_passe) updateData.mot_de_passe = mot_de_passe;
+    
+    // ✅ Hacher le mot de passe avant de le sauvegarder
+    if (mot_de_passe) {
+      const bcrypt = require('bcrypt');
+      const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+      updateData.mot_de_passe = hashedPassword;
+    }
+    
     if (photo) updateData.photo = photo;
 
     const user = await Utilisateur.findByIdAndUpdate(req.params.id, updateData, {

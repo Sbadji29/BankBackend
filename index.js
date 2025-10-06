@@ -20,8 +20,8 @@ mongoose.connect("mongodb+srv://Sbadji9:Bissextile29@cluster0.dz7tijz.mongodb.ne
 app.use("/api/utilisateurs", userRoutes);
 app.use("/api/auth", authRoutes);                
 app.use("/api/transactions", transactionRoutes);
-app.use("/uploads", express.static("uploads"));
+app.use("/api/uploads", express.static("uploads"));
 
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Serveur lancé sur http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Serveur lancé sur le port ${PORT}`));

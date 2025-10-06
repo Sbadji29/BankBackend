@@ -32,27 +32,27 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const { prenom, nom, email, numero_telephone, mot_de_passe } = req.body || {};
-    let photo = null;
+    const body = req.body || {};
+    const prenom = body.prenom;
+    const nom = body.nom;
+    const email = body.email;
+    const numero_telephone = body.numero_telephone;
+    const mot_de_passe = body.mot_de_passe;
 
-    if (req.file) photo = req.file.path.replace(/\\/g, "/");
+    let photo = null;
+    if (req.file) photo = req.file.path;
 
     const updateData = { prenom, nom, email, numero_telephone };
-
-    if (mot_de_passe) {
-      const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-      updateData.mot_de_passe = hashedPassword;
-    }
-
+    if (mot_de_passe) updateData.mot_de_passe = mot_de_passe;
     if (photo) updateData.photo = photo;
 
     const user = await Utilisateur.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
 
-    res.json({ message: "Profil mis à jour avec succès", user });
+    res.json({ message: "Profil mis à jour", user });
   } catch (err) {
-    console.error("Erreur updateUser:", err);
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

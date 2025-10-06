@@ -32,39 +32,50 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const body = req.body || {};
-    const prenom = body.prenom;
-    const nom = body.nom;
-    const email = body.email;
-    const numero_telephone = body.numero_telephone;
-    const mot_de_passe = body.mot_de_passe;
+    const { prenom, nom, email, numero_telephone, mot_de_passe } = req.body;
 
-    let photo = null;
-    if (req.file) photo = req.file.path;
+    // Vérifier que l'utilisateur existe
+    const user = await Utilisateur.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
 
-    const updateData = { prenom, nom, email, numero_telephone };
+    // Construire l'objet de mise à jour
+    const updateData = {};
     
-    // ✅ Hacher le mot de passe avant de le sauvegarder
+    if (prenom) updateData.prenom = prenom;
+    if (nom) updateData.nom = nom;
+    if (email) updateData.email = email;
+    if (numero_telephone) updateData.numero_telephone = numero_telephone;
+
+    // Hacher le nouveau mot de passe si fourni
     if (mot_de_passe) {
-      const bcrypt = require('bcrypt');
       const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
       updateData.mot_de_passe = hashedPassword;
     }
-    
-    if (photo) updateData.photo = photo;
 
-    const user = await Utilisateur.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
+    // Gérer la photo si un fichier est uploadé
+    if (req.file) {
+      updateData.photo = req.file.path;
+    }
+
+    // Mettre à jour l'utilisateur
+    const updatedUser = await Utilisateur.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select("-mot_de_passe");
+
+    res.status(200).json({ 
+      message: "Profil mis à jour avec succès", 
+      user: updatedUser 
     });
 
-    res.json({ message: "Profil mis à jour", user });
   } catch (err) {
-    console.error(err);
+    console.error("Erreur lors de la mise à jour:", err);
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 
 

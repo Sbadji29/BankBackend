@@ -8,7 +8,7 @@ const app= express();
 app.use(express.json());
 const cors = require("cors");
 app.use(cors({
-  origin: "http://localhost:3000", 
+  origin: "https://bank-rxmn.vercel.app/", 
   credentials: true
 }));
 mongoose.connect("mongodb+srv://Sbadji9:Bissextile29@cluster0.dz7tijz.mongodb.net/minibank",{

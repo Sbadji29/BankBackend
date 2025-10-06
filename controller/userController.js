@@ -1,5 +1,5 @@
 const Utilisateur = require("../models/Utilisateur");
-
+const bcrypt = require("bcryptjs"); 
 exports.createUser = async (req, res) => {
   try {
     const newUser = new Utilisateur(req.body);
@@ -34,48 +34,33 @@ exports.updateUser = async (req, res) => {
   try {
     const { prenom, nom, email, numero_telephone, mot_de_passe } = req.body;
 
-    // Vérifier que l'utilisateur existe
     const user = await Utilisateur.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
-    // Construire l'objet de mise à jour
     const updateData = {};
-    
     if (prenom) updateData.prenom = prenom;
     if (nom) updateData.nom = nom;
     if (email) updateData.email = email;
     if (numero_telephone) updateData.numero_telephone = numero_telephone;
 
-    // Hacher le nouveau mot de passe si fourni
     if (mot_de_passe) {
-      const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-      updateData.mot_de_passe = hashedPassword;
+      const bcrypt = require('bcrypt');
+      updateData.mot_de_passe = await bcrypt.hash(mot_de_passe, 10);
     }
 
-    // Gérer la photo si un fichier est uploadé
-    if (req.file) {
-      updateData.photo = req.file.path;
-    }
-
-    // Mettre à jour l'utilisateur
     const updatedUser = await Utilisateur.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true, runValidators: true }
     ).select("-mot_de_passe");
 
-    res.status(200).json({ 
-      message: "Profil mis à jour avec succès", 
-      user: updatedUser 
-    });
-
+    res.status(200).json({ message: "Profil mis à jour avec succès", user: updatedUser });
   } catch (err) {
     console.error("Erreur lors de la mise à jour:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
